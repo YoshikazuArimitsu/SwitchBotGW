@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SwitchBotGw.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,9 +10,18 @@ namespace SwitchBotGw
 {
 	public partial class App : Application
 	{
+        public static SimpleInjector.Container DIContainer;
+
 		public App ()
 		{
 			InitializeComponent();
+
+            //-- SimpleInjectorのセットアップ
+            DIContainer = new SimpleInjector.Container();
+            DIContainer.Register<ISwitchBotService>(() => {
+                return new SwitchBotService();
+            });
+            DIContainer.Verify();
 
 			MainPage = new SwitchBotGw.MainPage();
 		}

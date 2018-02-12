@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "503162504806",
+    "firebase_url": "https://switchbotgw.firebaseio.com",
+    "project_id": "switchbotgw",
+    "storage_bucket": "switchbotgw.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:503162504806:android:9604dedb79a7c8ed",
+        "android_client_info": {
+          "package_name": "jp.yarimit.SwitchBotGw"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "503162504806-src7m7s4kbls7pp24ramsbhj2gtk3omt.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKs-oKB_cF8rm4e6tBl7n2mRcSKozIO2s"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
