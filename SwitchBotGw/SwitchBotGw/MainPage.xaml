@@ -3,9 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:SwitchBotGw"
              x:Class="SwitchBotGw.MainPage">
-
-	<Label Text="Welcome to Xamarin.Forms!" 
-           VerticalOptions="Center" 
-           HorizontalOptions="Center" />
+    <StackLayout>
+        <Button Text="TrunOn" Command="{Binding TurnOnCommand}"/>
+        <Button Text="TrunOff" Command="{Binding TurnOffCommand}"/>
+    </StackLayout>
 
 </ContentPage>
