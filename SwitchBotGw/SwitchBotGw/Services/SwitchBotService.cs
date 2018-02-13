@@ -45,13 +45,14 @@ namespace SwitchBotGw.Services {
                     var device = sr.Device;
                     device.Connect().Subscribe(co => {
                         Debug.WriteLine("Connected.");
-                        scanSubscribe.Dispose(); //スキャンを止める
 
                         // SwitchBotのCharacteristicに繋ぐ
                         IDisposable serviceDiscoverSub = null;
                         serviceDiscoverSub = device
                             .WhenAnyCharacteristicDiscovered()
                             .Subscribe(ch => {
+                                scanSubscribe.Dispose(); //スキャンを止める
+
                                 Debug.WriteLine($"Characteristic Discovered: {ch.Uuid}:{ch.Service.Uuid}/{ch.Service.Description}");
                                 if (ch.Service.Uuid.ToString().Contains("cba20d00-224d-11e6-9fb8-0002a5d5c51b")) {
                                     if (ch.CanWrite()) {
@@ -80,14 +81,17 @@ namespace SwitchBotGw.Services {
                                 Debug.WriteLine($"WhenAnyCharacteristicDiscovered() failed {error.Message}");
                                 resultSubject.OnNext(false);
                                 resultSubject.OnCompleted();
+                            }, () => {
+                                device.CancelConnection();
+                                Debug.WriteLine($"Connection Closed");
                             });
                     }, error => {
                         Debug.WriteLine($"Connect() failed {error.Message}");
                         resultSubject.OnNext(false);
                         resultSubject.OnCompleted();
                     }, () => {
-                        device.CancelConnection();
-                        Debug.WriteLine($"Connection Closed");
+                        //device.CancelConnection();
+                        //Debug.WriteLine($"Connection Closed");
                     });
                 }
             }, error => {
