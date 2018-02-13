@@ -55,6 +55,8 @@ namespace SwitchBotGw.Services {
                             });
                     });
                 }
+            }, error => {
+                Debug.WriteLine($"Failed {error.Message}");
             });
             return Task.FromResult(success);
         }
