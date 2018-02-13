@@ -69,6 +69,8 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DependencyService\SwitchBotTrigger.cs" />
+    <Compile Include="SbIntentService.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="MyFirebaseIDService.cs" />
     <Compile Include="MyFirebaseMessagingService.cs" />

@@ -1,4 +1,5 @@
-﻿using SwitchBotGw.Services;
+﻿using SwitchBotGw.DependencyServices;
+using SwitchBotGw.Services;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -46,9 +47,12 @@ namespace SwitchBotGw.ViewModels
             Debug.WriteLine("TurnOff completed.");
         }
 
-        private async Task DebugAsync() {
-            await SwitchBot.DoDebugAsync();
+        private Task DebugAsync() {
+            var sb = DependencyService.Get<ISwitchBotTrigger>();
+            sb.Start();
+            //await SwitchBot.DoDebugAsync();
             Debug.WriteLine("DebugCommand completed.");
+            return Task.CompletedTask;
         }
         #endregion
     }

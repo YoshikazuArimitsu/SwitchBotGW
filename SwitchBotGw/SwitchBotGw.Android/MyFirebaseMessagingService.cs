@@ -12,6 +12,7 @@ using Android.Views;
 using Android.Widget;
 using Firebase.Messaging;
 using SwitchBotGw.Services;
+using Xamarin.Forms;
 
 namespace SwitchBotGw.Droid {
     [Service]
@@ -20,6 +21,13 @@ namespace SwitchBotGw.Droid {
         const string TAG = "MyFirebaseMsgService";
 
         public override void OnMessageReceived(RemoteMessage message) {
+#if false
+            Intent intent = new Intent(Forms.Context, typeof(SbIntentService));
+            Forms.Context.StartService(intent);
+            //Intent intent = new Intent(this, typeof(SbIntentService));
+            //StartService(intent);
+
+#else
             var device = message.Data["device"];
             var command = message.Data["command"];
             var switchBot = App.DIContainer.GetInstance<ISwitchBotService>();
@@ -36,30 +44,7 @@ namespace SwitchBotGw.Droid {
 
             var nm = (NotificationManager)this.GetSystemService(Context.NotificationService);
             nm.Notify(0, n);
-            /*
-            if (message.Data != null) {
-
-                var intent = new Intent(this, typeof(MainActivity));
-                intent.AddFlags(ActivityFlags.ClearTop);
-                var pendingIntent = PendingIntent.GetActivity(this, 0, intent, PendingIntentFlags.OneShot);
-
-                var notificationBuilder = new Notification.Builder(this)
-                    .SetContentTitle("FCM Message")
-                    .SetContentText("Hello")
-                    .SetAutoCancel(true)
-                    .SetContentIntent(pendingIntent);
-
-                var notificationManager = NotificationManager.FromContext(this);
-                notificationManager.Notify(0, notificationBuilder.Build());
-
-                // データ部をJSON化。
-                // JavaSetだとシリアライズできないので一旦Dictionaryに落としてからシリアライズ
-                //PushNotification.FirePushReceived(
-                //    JsonConvert.SerializeObject(
-                //        new Dictionary<string, string>(message.Data)
-                //        ));
-            }
-            */
+#endif
         }
     }
 }
