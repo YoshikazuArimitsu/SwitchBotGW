@@ -23,11 +23,14 @@ namespace SwitchBotGw.Droid {
             var device = message.Data["device"];
             var command = message.Data["command"];
             var switchBot = App.DIContainer.GetInstance<ISwitchBotService>();
+
             var result = command == "TurnOn" ? switchBot.TurnOnAsync(device).Result : switchBot.TurnOffAsync(device).Result;
+            var resultStr = result ? "Success" : "Failed";
+
 
             var n = new Notification.Builder(this)
-                .SetSmallIcon(Resource.Drawable.abc_ic_star_black_16dp)
-            .SetContentTitle("Hello notification")
+                .SetSmallIcon(Resource.Drawable.icon)
+            .SetContentTitle($"Device:{device} Command:{command} {resultStr}.")
             .SetVisibility(NotificationVisibility.Public)
             .Build();
 

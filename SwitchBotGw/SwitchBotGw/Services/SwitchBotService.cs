@@ -17,6 +17,7 @@ namespace SwitchBotGw.Services {
     }
 
     public class SwitchBotService : ISwitchBotService {
+        public int Timeout { get; set; } = 10;
         const string SwitchBotServiceUUID = "cba20d00-224d-11e6-9fb8-0002a5d5c51b";
         public static readonly byte[] TurnOnCommand = new byte[] { 0x57, 0x01, 0x01 };
         public static readonly byte[] TurnOffCommand = new byte[] { 0x57, 0x01, 0x02 };
@@ -98,7 +99,7 @@ namespace SwitchBotGw.Services {
 
             // タイムアウト検出用ストリーム
             IDisposable timeoutSubscribe = null;
-            timeoutSubscribe = Observable.Timer(TimeSpan.FromSeconds(10))
+            timeoutSubscribe = Observable.Timer(TimeSpan.FromSeconds(Timeout))
                 .Subscribe(l => {
                     Debug.WriteLine($"ScanSendAsync timeout.");
                     // 結果ストリームにfalseを流す
