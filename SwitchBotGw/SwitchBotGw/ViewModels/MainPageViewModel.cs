@@ -12,6 +12,7 @@ namespace SwitchBotGw.ViewModels
     {
         public Command TurnOnCommand { get; set; }
         public Command TurnOffCommand { get; set; }
+        public Command DebugCommand { get; set; }
         private ISwitchBotService SwitchBot { get; set; }
 
         #region properties
@@ -26,6 +27,7 @@ namespace SwitchBotGw.ViewModels
 
             TurnOnCommand = new Command(async () => await TurnOnAsync());
             TurnOffCommand = new Command(async () => await TurnOffAsync());
+            DebugCommand = new Command(async () => await DebugAsync());
         }
 
         public MainPageViewModel() : this(
@@ -42,6 +44,11 @@ namespace SwitchBotGw.ViewModels
         private async Task TurnOffAsync() {
             await SwitchBot.Test("cf46d116b6a1", SwitchBotService.TurnOffCommand);
             Debug.WriteLine("TurnOff completed.");
+        }
+
+        private async Task DebugAsync() {
+            await SwitchBot.DoDebugAsync();
+            Debug.WriteLine("DebugCommand completed.");
         }
         #endregion
     }

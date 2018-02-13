@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 namespace SwitchBotGw.Services {
     public interface ISwitchBotService {
         Task<bool> Test(string deviceUUID, byte[] command);
+        Task DoDebugAsync();
     }
 
     public class SwitchBotService : ISwitchBotService {
@@ -59,6 +60,10 @@ namespace SwitchBotGw.Services {
                 Debug.WriteLine($"Failed {error.Message}");
             });
             return Task.FromResult(success);
+        }
+
+        public Task DoDebugAsync() {
+            return Task.CompletedTask;
         }
     }
 }

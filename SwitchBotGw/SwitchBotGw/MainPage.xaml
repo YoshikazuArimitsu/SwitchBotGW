@@ -6,6 +6,7 @@
     <StackLayout>
         <Button Text="TrunOn" Command="{Binding TurnOnCommand}"/>
         <Button Text="TrunOff" Command="{Binding TurnOffCommand}"/>
+        <Button Text="Debug" Command="{Binding DebugCommand}"/>
     </StackLayout>
 
 </ContentPage>
