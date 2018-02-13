@@ -37,12 +37,12 @@ namespace SwitchBotGw.ViewModels
 
         #region Command Impl
         private async Task TurnOnAsync() {
-            await SwitchBot.Test("cf46d116b6a1", SwitchBotService.TurnOnCommand);
+            await SwitchBot.TurnOnAsync("cf46d116b6a1");
             Debug.WriteLine("TurnOn completed.");
         }
 
         private async Task TurnOffAsync() {
-            await SwitchBot.Test("cf46d116b6a1", SwitchBotService.TurnOffCommand);
+            await SwitchBot.TurnOffAsync("cf46d116b6a1");
             Debug.WriteLine("TurnOff completed.");
         }
 

@@ -23,8 +23,7 @@ namespace SwitchBotGw.Droid {
             var device = message.Data["device"];
             var command = message.Data["command"];
             var switchBot = App.DIContainer.GetInstance<ISwitchBotService>();
-            var result = switchBot.Test(device, command == "TurnOn" ? SwitchBotService.TurnOnCommand : SwitchBotService.TurnOffCommand)
-                .Result;
+            var result = command == "TurnOn" ? switchBot.TurnOnAsync(device).Result : switchBot.TurnOffAsync(device).Result;
 
             var n = new Notification.Builder(this)
                 .SetSmallIcon(Resource.Drawable.abc_ic_star_black_16dp)
