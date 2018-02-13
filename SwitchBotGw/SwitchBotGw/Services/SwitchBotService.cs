@@ -118,64 +118,19 @@ namespace SwitchBotGw.Services {
             return await resultSubject.ToTask();
         }
 
-        public Task DoDebugAsync() {
-            return Task.CompletedTask;
-            /*
-            // 結果受信用Subject
+        public async Task DoDebugAsync() {
             var resultSubject = new Subject<bool>();
 
             // BluetoothLE Scanストリーム
             IDisposable scanSubscribe = null;
             scanSubscribe = CrossBleAdapter.Current.Scan().Subscribe(sr => {
-                // デバイス発見
                 Debug.WriteLine($"Scan Discovered:{sr.Device.Name}:{sr.Device.Uuid}:{sr.Rssi}");
-                if (sr.Device.Uuid.ToString().Contains(deviceUUID)) {
-                    // 目的のデバイスなら接続
-                    var device = sr.Device;
-                    device.Connect().Subscribe(co => {
-                        Debug.WriteLine("Connected.");
-                        ScanSub_.Dispose(); //スキャンを止める
-
-                        // SwitchBotのCharacteristicに繋ぐ
-                        ServiceDiscoverSub_ = device
-                            .WhenAnyCharacteristicDiscovered()
-                            .Subscribe(ch => {
-                                Debug.WriteLine($"Characteristic Discovered: {ch.Uuid}:{ch.Service.Uuid}/{ch.Service.Description}");
-                                if (ch.Service.Uuid.ToString().Contains("cba20d00-224d-11e6-9fb8-0002a5d5c51b")) {
-                                    if (ch.CanWrite()) {
-                                        ServiceDiscoverSub_.Dispose(); // サービス検索を止める
-
-                                        // コマンド送信
-                                        Debug.WriteLine($"Send Command [{BitConverter.ToString(command)}]");
-                                        WriteSub_ = ch.Write(command)
-                                            .Subscribe(cr => {
-                                                Debug.WriteLine($"Write Result:{BitConverter.ToString(cr.Data)}");
-                                                device.CancelConnection();
-                                                WriteSub_.Dispose();
-
-                                                // 結果ストリームにtrueを流す
-                                                resultSubject.OnNext(true);
-                                                resultSubject.OnCompleted();
-                                                return;
-                                            }, onError => {
-
-                                            });
-                                    }
-                                }
-                            });
-                    });
-                }
-            }, error => {
-                Debug.WriteLine($"Failed {error.Message}");
-                // 結果ストリームにfalseを流す
-                resultSubject.OnNext(false);
-                resultSubject.OnCompleted();
             });
 
-            // タイムアウト検出用ストリーム
             IDisposable timeoutSubscribe = null;
-            timeoutSubscribe = Observable.Timer(TimeSpan.FromSeconds(10))
+            timeoutSubscribe = Observable.Timer(TimeSpan.FromSeconds(Timeout))
                 .Subscribe(l => {
+                    Debug.WriteLine($"ScanSendAsync timeout.");
                     // 結果ストリームにfalseを流す
                     resultSubject.OnNext(false);
                     resultSubject.OnCompleted();
@@ -184,11 +139,7 @@ namespace SwitchBotGw.Services {
                     timeoutSubscribe.Dispose();
                     scanSubscribe.Dispose();
                 });
-
-
-            var result = await resultSubject.ToTask();
-            return;
-            */
+            await resultSubject.ToTask();
         }
     }
 }
