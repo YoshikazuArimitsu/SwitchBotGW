@@ -17,7 +17,7 @@ using Firebase.Messaging;
 namespace SwitchBotGw.Droid {
     [Service]
     [IntentFilter(new[] { "com.google.firebase.INSTANCE_ID_EVENT" })]
-    public class MyFirebaseIIDService : FirebaseInstanceIdService {
+    public class MyFirebaseIDService : FirebaseInstanceIdService {
         const string TAG = "MyFirebaseIIDService";
 
         public override void OnTokenRefresh() {

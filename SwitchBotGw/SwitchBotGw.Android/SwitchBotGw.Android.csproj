@@ -65,7 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MainActivity.cs" />
-    <Compile Include="MyFirebaseIIDService.cs" />
+    <Compile Include="MyFirebaseIDService.cs" />
     <Compile Include="MyFirebaseMessagingService.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

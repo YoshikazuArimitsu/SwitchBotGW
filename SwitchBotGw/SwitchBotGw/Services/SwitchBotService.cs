@@ -12,7 +12,7 @@ namespace SwitchBotGw.Services {
         Task<bool> Test(string deviceUUID, byte[] command);
     }
 
-    class SwitchBotService : ISwitchBotService {
+    public class SwitchBotService : ISwitchBotService {
         const string SwitchBotServiceUUID = "cba20d00-224d-11e6-9fb8-0002a5d5c51b";
         public static readonly byte[] TurnOnCommand = new byte[] { 0x57, 0x01, 0x01 };
         public static readonly byte[] TurnOffCommand = new byte[] { 0x57, 0x01, 0x02 };
