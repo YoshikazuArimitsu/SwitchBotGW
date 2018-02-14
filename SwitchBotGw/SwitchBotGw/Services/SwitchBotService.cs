@@ -13,7 +13,7 @@ namespace SwitchBotGw.Services {
         Task<bool> TurnOnAsync(string device);
         Task<bool> TurnOffAsync(string device);
 
-        Task DoDebugAsync();
+        Task<int> DoDebugAsync();
     }
 
     public class SwitchBotService : ISwitchBotService {
@@ -118,13 +118,15 @@ namespace SwitchBotGw.Services {
             return await resultSubject.ToTask();
         }
 
-        public async Task DoDebugAsync() {
+        public async Task<int> DoDebugAsync() {
             var resultSubject = new Subject<bool>();
+            int ret = 0;
 
             // BluetoothLE Scanストリーム
             IDisposable scanSubscribe = null;
             scanSubscribe = CrossBleAdapter.Current.Scan().Subscribe(sr => {
                 Debug.WriteLine($"Scan Discovered:{sr.Device.Name}:{sr.Device.Uuid}:{sr.Rssi}");
+                ret++;
             });
 
             IDisposable timeoutSubscribe = null;
@@ -140,6 +142,8 @@ namespace SwitchBotGw.Services {
                     scanSubscribe.Dispose();
                 });
             await resultSubject.ToTask();
+
+            return ret;
         }
     }
 }

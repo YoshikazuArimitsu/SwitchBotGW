@@ -21,13 +21,16 @@ namespace SwitchBotGw.Droid {
         const string TAG = "MyFirebaseMsgService";
 
         public override void OnMessageReceived(RemoteMessage message) {
-#if false
+#if true
+            // IntentService版
             Intent intent = new Intent(Forms.Context, typeof(SbIntentService));
+            intent.PutExtra("device", message.Data["device"]);
+            intent.PutExtra("command", message.Data["command"]);
             Forms.Context.StartService(intent);
             //Intent intent = new Intent(this, typeof(SbIntentService));
             //StartService(intent);
-
 #else
+            // 直接操作版(バックグラウンド不可)
             var device = message.Data["device"];
             var command = message.Data["command"];
             var switchBot = App.DIContainer.GetInstance<ISwitchBotService>();
