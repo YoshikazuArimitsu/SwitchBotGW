@@ -30,74 +30,26 @@ namespace SwitchBotGw.Services {
             return await ScanSendAsync(device, TurnOffCommand);
         }
 
-        private async Task<bool> ScanSendAsync(string deviceUUID,
-            byte[] command) {
+        private async Task<IDevice> DiscoverDevice(string deviceUUID) {
             // 結果受信用Subject
-            var resultSubject = new Subject<bool>();
+            var resultSubject = new Subject<IDevice>();
 
             // BluetoothLE Scanストリーム
             IDisposable scanSubscribe = null;
             scanSubscribe = CrossBleAdapter.Current.Scan().Subscribe(sr => {
                 // デバイス発見
-                Debug.WriteLine($"Scan Discovered:{sr.Device.Name}:{sr.Device.Uuid}:{sr.Rssi}");
+                //Debug.WriteLine($"Scan Discovered:{sr.Device.Name}:{sr.Device.Uuid}:{sr.Rssi}");
                 if (sr.Device.Uuid.ToString().Contains(deviceUUID)) {
-                    // 目的のデバイスなら接続
-                    var device = sr.Device;
-                    device.Connect().Subscribe(co => {
-                        Debug.WriteLine("Connected.");
+                    Debug.WriteLine($"Scan Discovered:{sr.Device.Name}:{sr.Device.Uuid}:{sr.Rssi}");
+                    scanSubscribe.Dispose();
 
-                        // SwitchBotのCharacteristicに繋ぐ
-                        IDisposable serviceDiscoverSub = null;
-                        serviceDiscoverSub = device
-                            .WhenAnyCharacteristicDiscovered()
-                            .Subscribe(ch => {
-                                scanSubscribe.Dispose(); //スキャンを止める
-
-                                Debug.WriteLine($"Characteristic Discovered: {ch.Uuid}:{ch.Service.Uuid}/{ch.Service.Description}");
-                                if (ch.Service.Uuid.ToString().Contains("cba20d00-224d-11e6-9fb8-0002a5d5c51b")) {
-                                    if (ch.CanWrite()) {
-                                        serviceDiscoverSub.Dispose(); // サービス検索を止める
-
-                                        // コマンド送信
-                                        Debug.WriteLine($"Send Command [{BitConverter.ToString(command)}]");
-                                        IDisposable writeSub = null;
-                                        writeSub = ch.Write(command)
-                                            .Subscribe(cr => {
-                                                device.CancelConnection();
-                                                writeSub.Dispose();
-
-                                                // 結果ストリームにtrueを流す
-                                                resultSubject.OnNext(true);
-                                                resultSubject.OnCompleted();
-                                                Debug.WriteLine($"Write() completed.");
-                                            }, error => {
-                                                Debug.WriteLine($"Write() failed {error.Message}");
-                                                resultSubject.OnNext(false);
-                                                resultSubject.OnCompleted();
-                                            });
-                                    }
-                                }
-                            }, error => {
-                                Debug.WriteLine($"WhenAnyCharacteristicDiscovered() failed {error.Message}");
-                                resultSubject.OnNext(false);
-                                resultSubject.OnCompleted();
-                            }, () => {
-                                device.CancelConnection();
-                                Debug.WriteLine($"Connection Closed");
-                            });
-                    }, error => {
-                        Debug.WriteLine($"Connect() failed {error.Message}");
-                        resultSubject.OnNext(false);
-                        resultSubject.OnCompleted();
-                    }, () => {
-                        //device.CancelConnection();
-                        //Debug.WriteLine($"Connection Closed");
-                    });
+                    resultSubject.OnNext(sr.Device);
+                    resultSubject.OnCompleted();
                 }
             }, error => {
-                Debug.WriteLine($"Failed {error.Message}");
+                Debug.WriteLine($"Scan Failed {error.Message}");
                 // 結果ストリームにfalseを流す
-                resultSubject.OnNext(false);
+                resultSubject.OnNext(null);
                 resultSubject.OnCompleted();
             });
 
@@ -105,15 +57,92 @@ namespace SwitchBotGw.Services {
             IDisposable timeoutSubscribe = null;
             timeoutSubscribe = Observable.Timer(TimeSpan.FromSeconds(Timeout))
                 .Subscribe(l => {
-                    Debug.WriteLine($"ScanSendAsync timeout.");
+                    Debug.WriteLine($"DiscoverDevice timeout.");
+                    // スキャンを止める
+                    scanSubscribe.Dispose();
+                    timeoutSubscribe.Dispose();
+
                     // 結果ストリームにfalseを流す
-                    resultSubject.OnNext(false);
+                    resultSubject.OnNext(null);
                     resultSubject.OnCompleted();
 
-                    // スキャンを止める
-                    timeoutSubscribe.Dispose();
-                    scanSubscribe.Dispose();
                 });
+
+
+            return await resultSubject.ToTask();
+        }
+
+        private async Task<bool> ScanSendAsync(string deviceUUID,
+            byte[] command) {
+            var device = await DiscoverDevice(deviceUUID);
+            if (device == null) {
+                return false;
+            }
+
+            // 結果受信用Subject
+            var resultSubject = new Subject<bool>();
+
+            device.Connect().Subscribe(co => {
+                // SwitchBotのCharacteristicに繋ぐ
+                IDisposable serviceDiscoverSub = null;
+                serviceDiscoverSub = device
+                    .WhenAnyCharacteristicDiscovered()
+                    .Subscribe(ch => {
+
+                        Debug.WriteLine($"Characteristic Discovered: {ch.Uuid}:{ch.Service.Uuid}/{ch.Service.Description}");
+                        if (ch.Service.Uuid.ToString().Contains("cba20d00-224d-11e6-9fb8-0002a5d5c51b")) {
+                            if (ch.CanWrite()) {
+                                serviceDiscoverSub.Dispose(); // サービス検索を止める
+
+                                // コマンド送信
+                                Debug.WriteLine($"Send Command [{BitConverter.ToString(command)}]");
+                                IDisposable writeSub = null;
+                                writeSub = ch.Write(command)
+                                    .Subscribe(cr => {
+                                        Debug.WriteLine($"Write() completed.");
+                                        device.CancelConnection();
+                                        Debug.WriteLine($"Device Connection Closed");
+                                        writeSub.Dispose();
+
+                                        // 結果ストリームにtrueを流す
+                                        resultSubject.OnNext(true);
+                                        resultSubject.OnCompleted();
+                                    }, error => {
+                                        Debug.WriteLine($"Write() failed {error.Message}");
+                                        resultSubject.OnNext(false);
+                                        resultSubject.OnCompleted();
+                                    }, () => {
+                                        device.CancelConnection();
+                                        Debug.WriteLine($"Device Connection Closed");
+                                    });
+                            }
+                        }
+                    }, error => {
+                        Debug.WriteLine($"WhenAnyCharacteristicDiscovered() failed {error.Message}");
+                        resultSubject.OnNext(false);
+                        resultSubject.OnCompleted();
+                    });
+            }, error => {
+                Debug.WriteLine($"Connect() failed {error.Message}");
+                resultSubject.OnNext(false);
+                resultSubject.OnCompleted();
+            }, () => {
+                //device.CancelConnection();
+                //Debug.WriteLine($"Device Connection Closed");
+            });
+
+            // タイムアウト検出用ストリーム
+            IDisposable timeoutSubscribe = null;
+            timeoutSubscribe = Observable.Timer(TimeSpan.FromSeconds(Timeout))
+                    .Subscribe(l => {
+                        Debug.WriteLine($"ScanSendAsync timeout.");
+                        // 結果ストリームにfalseを流す
+                        resultSubject.OnNext(false);
+                        resultSubject.OnCompleted();
+
+                        // スキャンを止める
+                        timeoutSubscribe.Dispose();
+                    });
 
             return await resultSubject.ToTask();
         }
